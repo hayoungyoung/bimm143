@@ -2,7 +2,7 @@
 title: "Machine Learning 1"
 author: "Hayoung A15531571"
 date: "10/21/2021"
-output: pdf_document
+output: html_document
 ---
 
 First up is clustering methods
@@ -356,5 +356,6 @@ top_10_genes <- names(gene_score_ranked[1:10])
 top_10_genes 
 ```
 
+finsihed
 
 
