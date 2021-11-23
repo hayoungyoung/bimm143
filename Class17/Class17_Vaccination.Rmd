@@ -1,0 +1,303 @@
+---
+title: "Class17_Vaccination"
+author: "Hayoung A15531571"
+date: "11/23/2021"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document: default
+  
+---
+
+## Getting Started
+
+Let's start by importing our data!
+```{r}
+# Import vaccination data
+vax <- read.csv("covid19vaccinesbyzipcode_test.csv")
+head(vax)
+```
+```{r}
+library(dplyr)
+```
+
+>> Q1. What column details the total number of people fully vaccinated?
+
+The column "persons_fully_vaccinated" details the total number of fully vaccinated people. 
+
+>> Q2. What column details the Zip code tabulation area? 
+
+"zip_code_tabulation_area" column shows the zip code
+
+>> Q3. What is the earliest date in this dataset?
+
+```{r}
+head(n=1, vax$as_of_date)
+```
+```{r}
+dplyr::first(vax$as_of_date)
+```
+The earliest date is 2021-01-5
+
+>> Q4. What is the latest date in this dataset?
+
+```{r}
+dplyr::last(vax$as_of_date)
+```
+The latest date is 2021-11-16
+
+
+Calling skim!
+```{r}
+skimr::skim(vax)
+```
+
+>> Q5. How many numeric columns are in this dataset?
+
+9
+
+>> Q6. Note that there are “missing values” in the dataset. How many NA values there in the persons_fully_vaccinated column?
+
+There are 8256 NA values in this column
+
+>> Q7. What percent of persons_fully_vaccinated values are missing (to 2 significant figures)?
+
+```{r}
+(sum( is.na(vax$persons_fully_vaccinated) ) /
+NROW(vax$persons_fully_vaccinated)) *100
+```
+10.17% of the data is missing here
+
+# Working with dates
+
+```{r}
+#Let's use lubridate to make our lives easier when dealing with dates and times
+#install.packages("lubridate")
+library(lubridate)
+```
+
+```{r}
+#Specify our format
+vax$as_of_date <- ymd(vax$as_of_date)
+```
+
+```{r}
+#Example of what we can now do easily
+today() - vax$as_of_date[1]
+```
+
+>> Q9. How many days have passed between the first and last day of the report?
+
+```{r}
+vax$as_of_date[nrow(vax)] - vax$as_of_date[1]
+```
+
+It has been 315 days since the first update and to the latest update
+
+>> Q10. How many unique dates are in the dataset (i.e. how many different dates are detailed)?
+
+```{r}
+NROW(unique(vax$as_of_date))
+```
+There are 46 unique dates in the dataset
+
+## Working with ZIP codes
+
+```{r}
+#Load first
+library(zipcodeR)
+```
+```{r}
+geocode_zip('92037')
+```
+
+An example
+```{r}
+#Calculate the distance between the centroids of any two ZIP codes in miles, e.g.
+zip_distance('92037','92109')
+```
+The distance between these two zip codes is 2.33 miles
+
+We can pull census data about ZIP code areas (including median household income etc.). For example:
+```{r}
+reverse_zipcode(c('92037', "92109", "92130") )
+```
+
+```{r}
+# Pull data for all ZIP codes in the dataset
+zipdata <- reverse_zipcode( vax$zip_code_tabulation_area )
+```
+
+
+## Focus on the San Diego Area
+
+Let’s now focus in on the San Diego County area by restricting ourselves first to vax$county == "San Diego" entries. We can use base R or dplyr
+
+```{r}
+library(dplyr)
+
+sd <- filter(vax, county == "San Diego")
+
+nrow(sd)
+```
+
+Using dplyr is often more convenient when we are subsetting across multiple criteria, for example all San Diego county areas with a population of over 10,000.
+
+```{r}
+sd.10 <- filter(vax, county == "San Diego" &
+                age5_plus_population > 10000)
+```
+
+>> Q11. How many distinct zip codes are listed for San Diego County
+
+```{r}
+length(sd$zip_code_tabulation_area)
+length(unique(sd$zip_code_tabulation_area))
+```
+There are 107 unique zip codes listed for the county
+
+>> Q12. What San Diego County Zip code area has the largest 12 + Population in this dataset?
+
+```{r}
+ind <- which.max(sd$age12_plus_population)
+sd[ind,]
+```
+The zip code is 92154, with 76365.2 people over the age of 12
+
+What is the population of 92037 ZIP code area?
+```{r}
+filter(sd, zip_code_tabulation_area == "92037")[1,]
+```
+
+
+```{r}
+sd_q13 <- filter(vax, county == "San Diego" & as_of_date == "2021-11-09")
+
+nrow(sd_q13)
+```
+
+>> Q13. What is the overall average “Percent of Population Fully Vaccinated” value for all San Diego “County” as of “2021-11-09”?
+
+```{r}
+sd.now <- filter(sd, as_of_date=="2021-11-09")
+
+mean(sd.now$percent_of_population_fully_vaccinated, na.rm = TRUE)
+```
+The average is 67.28%
+
+```{r}
+summary(sd.now$percent_of_population_fully_vaccinated)
+```
+
+>> Q14. Using either ggplot or base R graphics make a summary figure that shows the distribution of Percent of Population Fully Vaccinated values as of “2021-11-09”?
+
+```{r}
+hist(sd.now$percent_of_population_fully_vaccinated)
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(sd.now) +
+  aes(percent_of_population_fully_vaccinated) +
+  geom_histogram(bins=15)
+```
+
+```{r}
+filter(sd.now, zip_code_tabulation_area == "92037")
+```
+
+
+# Focus on UCSD / La Jolla
+
+```{r}
+ucsd <- filter(sd, zip_code_tabulation_area=="92037")
+
+#Age 5+ population
+ucsd[1,]$age5_plus_population
+```
+
+>> Q15. Using ggplot make a graph of the vaccination rate time course for the 92037 ZIP code area:
+
+```{r}
+ggplot(ucsd) +
+  aes(x=as_of_date, y=percent_of_population_fully_vaccinated) +
+  geom_point() +
+  geom_line(group=1) +
+  ylim(c(0,1)) +
+  labs(x="Date", y="Percent Vaccinated")
+```
+
+>> Q16. Calculate the mean “Percent of Population Fully Vaccinated” for ZIP code areas with a population as large as 92037 (La Jolla) as_of_date “2021-11-16”. Add this as a straight horizontal line to your plot from above with the geom_hline() function?
+
+```{r}
+# Subset to all CA areas with a population as large as 92037
+vax.36 <- filter(vax, age5_plus_population > 36144 &
+                as_of_date == "2021-11-16")
+
+head(vax.36)
+```
+
+```{r}
+mean(vax.36$percent_of_population_fully_vaccinated)
+```
+
+```{r}
+ggplot(ucsd) +
+  aes(x=as_of_date, y=percent_of_population_fully_vaccinated) +
+  geom_point() +
+  geom_line(group=1) +
+  ylim(c(0,1)) +
+  labs(x="Date", y="Percent Vaccinated") +
+  geom_hline(yintercept = .6629812)
+```
+
+>> Q17. What is the 6 number summary (Min, 1st Qu., Median, Mean, 3rd Qu., and Max) of the “Percent of Population Fully Vaccinated” values for ZIP code areas with a population as large as 92037 (La Jolla) as_of_date “2021-11-16”?
+
+```{r}
+summary(vax.36$percent_of_population_fully_vaccinated)
+```
+The average is 66.30%
+
+>> Q18. Using ggplot generate a histogram of this data.
+
+```{r}
+ggplot(ucsd) +
+  aes(percent_of_population_fully_vaccinated) +
+  geom_histogram()
+```
+
+>> Q19. Is the 92109 and 92040 ZIP code areas above or below the average value you calculated for all these above?
+
+```{r}
+vax %>% filter(as_of_date == "2021-11-16") %>%  
+  filter(zip_code_tabulation_area=="92040") %>%
+  select(percent_of_population_fully_vaccinated)
+```
+```{r}
+vax %>% filter(as_of_date == "2021-11-16") %>%  
+  filter(zip_code_tabulation_area=="92109") %>%
+  select(percent_of_population_fully_vaccinated)
+```
+
+The average overal was 66.30%, so the 92040 average is lower at 52.04%
+The 92109 averave is higher at 68.77%
+
+>> Q20. Finally make a time course plot of vaccination progress for all areas in the full dataset with a age5_plus_population > 36144.
+
+```{r}
+vax.36.all <- filter(vax, age5_plus_population > 36144)
+
+
+ggplot(vax.36.all) +
+  aes(as_of_date,
+      percent_of_population_fully_vaccinated, 
+      group=zip_code_tabulation_area) +
+  geom_line(alpha=0.2, color="blue") +
+  labs(x="Date", y="Percent Vaccinated",
+       title="Vaccination Rate Across California",
+       subtitle="Only areas with a population above 36k are shown") +
+  geom_hline(yintercept = 0.66, linetype="dashed")
+```
+
+
