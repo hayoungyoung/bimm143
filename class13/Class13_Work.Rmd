@@ -1,0 +1,41 @@
+---
+title: "Class 13"
+author: "Hayoung A15531571"
+date: "11/9/2021"
+output: pdf_document
+---
+
+Reading the tsv file and changing column names
+```{r}
+blast <- read.delim("mm-second.x.zebrafish.tsv")
+
+colnames(blast) =c("qseqid", "sseqid", "pident", "length", "mismatch", "gapopen", "qstart", "qend", "sstart", "send", "evalue", "bitscore")
+```
+
+Making a histogram
+```{r}
+library(ggplot2)
+
+```
+
+```{r}
+hist(blast$bitscore, breaks=30)
+```
+
+
+```{r}
+## Asuming your blast results are stored in an object called 'b'
+plot(blast$pident  * (blast$qend - blast$qstart), blast$bitscore)
+```
+
+```{r}
+ggplot(blast) +
+  aes(pident, bitscore) +
+  geom_point(alpha=0.1)
+```
+
+```{r}
+ggplot(blast, aes((blast$pident * (blast$qend - blast$qstart)), bitscore)) + geom_point(alpha=0.1) + geom_smooth()
+
+```
+
