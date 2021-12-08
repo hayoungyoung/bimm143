@@ -4,7 +4,23 @@ Bioinformatics Class
 UC San Diego
 Fall 2021
 
-This is a showcase of the work I have completed for this class
+The following information about the course can be found [here](https://bioboot.github.io/bimm143_F21/schedule/#6)
+
+Bioinformatics - the application of computational and analytical methods to biological problems - is a rapidly maturing field that is driving the collection, analysis, and interpretation of the avalanche of data in modern life sciences and medical research.
+
+This upper division 4-unit course is designed for biology majors and provides an introduction to the principles and practical approaches of bioinformatics as applied to genes and proteins.
+
+An integrated lecture/lab structure with hands-on exercises and small-scale projects emphasizes modern developments in genomics and proteomics. A detailed listing of all lecture topics is available and includes the major areas of:
+
+Genomic and biomolecular bioinformatic resources,
+Advances in sequencing technologies,
+Genome informatics,
+Structural informatics,
+Transcriptomics, and
+Bioinformatics data analysis with R.
+Students completing this course will be able to apply leading existing bioinformatics tools to address biological questions. Our broader goal is to point towards perspectives that bioinformatics can expose for the integration and analysis of complex biological information. For further details please see our complete list of course objectives and specific learning goals.
+
+
 
 ## Content
 - R functions/packages from CRAN & BioConductor [Class 6](https://github.com/hayoungyoung/bimm143/blob/main/class6hw/CLASS%206%20HW.Rmd)
